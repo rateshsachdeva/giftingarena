@@ -17,62 +17,52 @@ export default function Home() {
 
   const handleSend = async (message: Message) => {
     const updatedMessages = [...messages, message];
-
     setMessages(updatedMessages);
     setLoading(true);
 
-    const response = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        messages: updatedMessages
-      })
-    });
+    try {
+      // Step 1: Start assistant run
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: message.content })
+      });
 
-    if (!response.ok) {
-      setLoading(false);
-      throw new Error(response.statusText);
-    }
+      const { thread_id, run_id } = await response.json();
 
-    const data = response.body;
-
-    if (!data) {
-      return;
-    }
-
-    setLoading(false);
-
-    const reader = data.getReader();
-    const decoder = new TextDecoder();
-    let done = false;
-    let isFirst = true;
-
-    while (!done) {
-      const { value, done: doneReading } = await reader.read();
-      done = doneReading;
-      const chunkValue = decoder.decode(value);
-
-      if (isFirst) {
-        isFirst = false;
-        setMessages((messages) => [
-          ...messages,
-          {
-            role: "assistant",
-            content: chunkValue
-          }
-        ]);
-      } else {
-        setMessages((messages) => {
-          const lastMessage = messages[messages.length - 1];
-          const updatedMessage = {
-            ...lastMessage,
-            content: lastMessage.content + chunkValue
-          };
-          return [...messages.slice(0, -1), updatedMessage];
-        });
+      if (!thread_id || !run_id) {
+        throw new Error("Missing thread_id or run_id from response.");
       }
+
+      // Step 2: Poll until assistant finishes
+      let completed = false;
+      let assistantReply = "";
+
+      while (!completed) {
+        const res = await fetch(`/api/messages?thread_id=${thread_id}&run_id=${run_id}`);
+        const data = await res.json();
+
+        if (res.status === 202) {
+          await new Promise((resolve) => setTimeout(resolve, 1000)); // wait and try again
+        } else {
+          assistantReply = data.text;
+          completed = true;
+        }
+      }
+
+      // Step 3: Add assistant reply to messages
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: assistantReply }
+      ]);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "⚠️ Oops! Something went wrong." }
+      ]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,7 +70,7 @@ export default function Home() {
     setMessages([
       {
         role: "assistant",
-        content: `Hi there! I'm Chatbot UI, an AI assistant. I can help you with things like answering questions, providing information, and helping with tasks. How can I help you?`
+        content: `Hi there! I'm Gifting Arena's AI Assistant 🎁. I can help you find the perfect gift based on personality, occasion, or budget. Just ask!`
       }
     ]);
   };
@@ -90,30 +80,19 @@ export default function Home() {
   }, [messages]);
 
   useEffect(() => {
-    setMessages([
-      {
-        role: "assistant",
-        content: `Hi there! I'm Chatbot UI, an AI assistant. I can help you with things like answering questions, providing information, and helping with tasks. How can I help you?`
-      }
-    ]);
+    handleReset(); // Show welcome message on first load
   }, []);
 
   return (
     <>
       <Head>
-        <title>Chatbot UI</title>
+        <title>Gifting Arena AI Assistant</title>
         <meta
           name="description"
-          content="A simple chatbot starter kit for OpenAI's chat model using Next.js, TypeScript, and Tailwind CSS."
+          content="A simple chatbot starter kit for OpenAI Assistants API using Next.js, TypeScript, and Tailwind CSS."
         />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1"
-        />
-        <link
-          rel="icon"
-          href="/favicon.ico"
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <div className="flex flex-col h-screen">
@@ -130,6 +109,7 @@ export default function Home() {
             <div ref={messagesEndRef} />
           </div>
         </div>
+
         <Footer />
       </div>
     </>
