@@ -13,7 +13,7 @@ export const ChatMessage: FC<Props> = ({ message }) => {
       {/* Avatar */}
       {isAssistant && (
         <div className="flex-shrink-0 mr-2">
-          <div className="h-9 w-9 bg-orange-200 text-orange-800 rounded-full flex items-center justify-center font-bold text-sm shadow-sm">
+          <div className="h-11 w-11 bg-orange-200 text-orange-800 rounded-full flex items-center justify-center font-bold text-sm shadow-sm">
             🤖
           </div>
         </div>
@@ -43,7 +43,7 @@ export const ChatMessage: FC<Props> = ({ message }) => {
       {/* User Avatar */}
       {!isAssistant && (
         <div className="flex-shrink-0 ml-2">
-          <div className="h-9 w-9 bg-indigo-100 text-indigo-800 rounded-full flex items-center justify-center font-bold text-sm shadow-sm">
+          <div className="h-11 w-11 bg-indigo-100 text-indigo-800 rounded-full flex items-center justify-center font-bold text-sm shadow-sm">
             🧑
           </div>
         </div>
