@@ -19,12 +19,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       "Content-Type": "application/json",
     };
 
-    const threadRes = await fetch("https://api.openai.com/v1/threads", {
-      method: "POST",
-      headers,
-    });
-    const thread = await threadRes.json();
-    if (!thread?.id) throw new Error("Failed to create thread");
+const threadRes = await fetch("https://api.openai.com/v1/threads", {
+  method: "POST",
+  headers,
+});
+const thread = await threadRes.json();
+
+console.log("🧪 Thread response:", thread); // 🔍 log what OpenAI returns
+
+if (!thread?.id) {
+  console.error("❌ Failed to create thread:", thread);
+  throw new Error("Failed to create thread");
+}
+
 
     await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
       method: "POST",
