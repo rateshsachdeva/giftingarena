@@ -17,6 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const headers = {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
+      "OpenAI-Beta": "assistants=v2" // ✅ REQUIRED FOR Assistants API v2
     };
 
 const threadRes = await fetch("https://api.openai.com/v1/threads", {
