@@ -11,19 +11,22 @@ export const ChatMessage: FC<Props> = ({ message }) => {
   return (
     <div className={`flex flex-col ${isAssistant ? "items-start" : "items-end"}`}>
       <div
-        className={`flex items-center ${
-          isAssistant ? "bg-neutral-200 text-neutral-900" : "bg-blue-500 text-white"
-        } rounded-2xl px-3 py-2 max-w-[67%] whitespace-pre-wrap`}
+        className={`
+          flex items-start 
+          ${isAssistant
+            ? "bg-orange-100 text-[#5c1f00]"
+            : "bg-indigo-600 text-white"}
+          rounded-2xl px-4 py-3 max-w-[80%] shadow-md text-base leading-relaxed
+        `}
         style={{ overflowWrap: "anywhere" }}
       >
         {isAssistant ? (
-          // ✅ Render assistant message as HTML
           <div
             dangerouslySetInnerHTML={{ __html: message.content }}
+            className="prose prose-sm max-w-none"
           />
         ) : (
-          // ✅ Render user message normally
-          message.content
+          <span>{message.content}</span>
         )}
       </div>
     </div>
