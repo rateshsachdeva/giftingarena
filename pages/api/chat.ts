@@ -19,7 +19,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       "Content-Type": "application/json",
     };
 
-    // Step 1: Create thread
     const threadRes = await fetch("https://api.openai.com/v1/threads", {
       method: "POST",
       headers,
@@ -27,7 +26,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const thread = await threadRes.json();
     if (!thread?.id) throw new Error("Failed to create thread");
 
-    // Step 2: Post user message
     await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
       method: "POST",
       headers,
@@ -37,7 +35,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }),
     });
 
-    // Step 3: Run assistant
     const runRes = await fetch(
       `https://api.openai.com/v1/threads/${thread.id}/runs`,
       {
@@ -49,7 +46,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const run = await runRes.json();
     if (!run?.id) throw new Error("Failed to run assistant");
 
-    // Step 4: Wait for completion
     let status = run.status;
     while (status !== "completed" && status !== "failed") {
       await new Promise((r) => setTimeout(r, 1000));
@@ -61,7 +57,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       status = statusData.status;
     }
 
-    // Step 5: Get response
     const messagesRes = await fetch(
       `https://api.openai.com/v1/threads/${thread.id}/messages`,
       { method: "GET", headers }
