@@ -9,7 +9,17 @@ export const ChatMessage: FC<Props> = ({ message }) => {
   const isAssistant = message.role === "assistant";
 
   return (
-    <div className={`flex flex-col ${isAssistant ? "items-start" : "items-end"}`}>
+    <div className={`flex ${isAssistant ? "justify-start" : "justify-end"} mb-4`}>
+      {/* Avatar */}
+      {isAssistant && (
+        <div className="flex-shrink-0 mr-2">
+          <div className="h-9 w-9 bg-orange-200 text-orange-800 rounded-full flex items-center justify-center font-bold text-sm shadow-sm">
+            🤖
+          </div>
+        </div>
+      )}
+
+      {/* Message Bubble */}
       <div
         className={`
           flex items-start 
@@ -29,6 +39,15 @@ export const ChatMessage: FC<Props> = ({ message }) => {
           <span>{message.content}</span>
         )}
       </div>
+
+      {/* User Avatar */}
+      {!isAssistant && (
+        <div className="flex-shrink-0 ml-2">
+          <div className="h-9 w-9 bg-indigo-100 text-indigo-800 rounded-full flex items-center justify-center font-bold text-sm shadow-sm">
+            🧑
+          </div>
+        </div>
+      )}
     </div>
   );
 };
